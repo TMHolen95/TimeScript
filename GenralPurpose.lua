@@ -7,7 +7,7 @@
 --
 -- Author: Tor-Martin Holen (tormartin.holen@gmail.com)
 profiles = {1,2,3}
-profileNames = {"Default", "Programming","Paladins"}
+profileNames = {"Default", "Programming","Adobe Reader"}
 activeProfile = 1
 
 function OnEvent(event, arg)
@@ -41,7 +41,7 @@ function ProfileRunner()
     elseif(activeProfile == profiles[2]) then
         ProfileProgramming()
     elseif(activeProfile == profiles[3]) then
-        ProfilePaladins()
+        ProfileAdobeReader()
     end
 end
 
@@ -77,15 +77,16 @@ function ProfileDefault()
 
     -- G602 Mouse
     -- Mouse G3 (Scroll Wheel)
-    OnTimedEvent(mBtn, 3,{"CycleDPI"}, {"lctrl","t"}, {"lgui", "e"}, {"lgui","q"})
+    OnTimedEvent(mBtn, 3,{"ChangeProfile"}, {"lctrl","t"}, {"lgui", "e"}, {"lgui","q"})
     --	OnTimedEvent(mBtn, 3,{""}, {"lctrl","t"}, {"lgui", "e"}, {"lgui","q"})
     -- Mouse G4-G6 (Bottom Row)
     -- OnTimedEvent(mBtn, 4,{"lgui","tab"},{"lgui","lctrl","right"}, {"lgui","lctrl","left"})
     OnHoldEvent(mBtn, 4,{"lalt","tab"},{"lalt"})
-    OnRegularEvent(mBtn, 5, {"lctrl"}) -- Control key
+    --OnRegularEvent(mBtn, 5, {"lctrl"}) -- Control key
     --OnToggleModifierEvent(mBtn, 5,{"lctrl"},{"lshift"},{"lalt"})
-    --OnSwappableEvent(mBtn, 5, {"lctrl"},{"lshift"},{"lalt"}) -- Control key
+    OnSwappableEvent(mBtn, 5, {"lctrl"},{"lshift"},{"lalt"}) -- Control key
     OnTimedEvent(mBtn, 6, {"lctrl","w"}, {"lctrl","lshift","t"}, {"lctrl","lshift","q"}, {"lalt","f4"}) -- Close tab, Re-open tab, Quit Chrome, Close window
+    --OnTimedEvent(mBtn, 6, {"lalt","d"}, {"lctrl","lshift","t"}, {"lctrl","lshift","q"}, {"lalt","f4"}) -- Close tab, Re-open tab, Quit Chrome, Close window
 
     -- Mouse G7-G9 (Upper Row)
     OnTimedEvent(mBtn, 7, {"lgui", "right"},{"lgui","up"},{"lgui","down"},{"lgui","left"}) -- Move window: right, up, down
@@ -94,6 +95,36 @@ function ProfileDefault()
     --)
     OnTimedEvent(mBtn, 8, {"lctrl","tab"}, {"lctrl","lshift","tab"}, {"lgui"}) -- Next Tab, Previous Tab
     OnTimedEvent(mBtn, 9, {"lalt","left"}, {"lalt","right"}, {"lalt","up"}) -- Tab backwards, Tab Forwards, Directory up
+
+    MusicControl()
+end
+
+
+function ProfileAdobeReader()
+    -- G710 Keyboard
+    -- M-Keys M1-M3
+    OnTimedEvent(mKey,1)
+    OnTimedEvent(mKey,2)
+    OnTimedEvent(mKey,3)
+
+    -- G-Keys G1-G6
+    TextControl()
+    OnTimedEvent(gKey,3, {"ChangeProfile"})
+    OnTimedEvent(gKey,4)
+    OnTimedEvent(gKey,5)
+    OnTimedEvent(gKey,6, {"lctrl", "j"},{"lctrl", "h"})
+
+    -- G602 Mouse
+    -- Mouse G3 (Scroll Wheel)
+    OnTimedEvent(mBtn, 3,{"ChangeProfile"}, {"lctrl","t"}, {"lgui", "e"}, {"lgui","q"})
+    OnHoldEvent(mBtn, 4,{"lalt","tab"},{"lalt"})
+    OnRegularEvent(mBtn, 5, {"lctrl"}) -- Control key
+    OnTimedEvent(mBtn, 6, {"lctrl","lshift", "h"}, {"lctrl","l"}) -- Auto Scroll,
+
+    -- Mouse G7-G9 (Upper Row)
+    OnTimedEvent(mBtn, 7, {"lgui", "right"},{"lgui","up"},{"lgui","down"},{"lgui","left"}) -- Move window: right, up, down
+    OnTimedEvent(mBtn, 8, {"u"}, {"lctrl", "z"}, {"lctrl", "lshift", "z"}) -- Underline
+    OnTimedEvent(mBtn, 9, {"h"}, {"s"}) -- Hand tool
 
     MusicControl()
 end
@@ -114,7 +145,7 @@ function ProfileProgramming()
 
     -- G602 Mouse
     -- Mouse G3 (Scroll Wheel)
-    OnTimedEvent(mBtn, 3, {"CycleDPI"})
+    OnTimedEvent(mBtn, 3,{"ChangeProfile"}, {"lctrl","t"}, {"lgui", "e"}, {"lgui","q"})
 
     -- Mouse G4-G6 (Bottom Row)
     OnHoldEvent(mBtn, 4,{"lalt","tab"},{"lalt"})
@@ -148,7 +179,7 @@ function ProfilePaladins()
 
     -- G602 Mouse
     -- Mouse G3 (Scroll Wheel)
-    OnTimedEvent(mBtn, 3,{"CycleDPI"})
+    OnTimedEvent(mBtn, 3,{"ChangeProfile"}, {"lctrl","t"}, {"lgui", "e"}, {"lgui","q"})
 
     -- Mouse G4-G6 (Bottom Row)
     OnRegularEvent(mBtn, 4, {"tab"})
@@ -162,6 +193,7 @@ function ProfilePaladins()
 
     MusicControl()
 end
+
 function TextControl()
     OnTimedMacroEvent(gKey,1,
         {{"home"},{"lshift","end"}},
@@ -206,9 +238,7 @@ function OnHoldEvent(wantedEvent, wantedArg, ...)
 end
 
 function OnToggleModifierEvent(wantedEvent, wantedArg, ...)
-    if (e == wantedEvent[1] and a == wantedArg) then
-        prevRuntime = runtime
-    end
+    SetPrevRuntimeAtKeydownEvent(wantedEvent, wantedArg)
 
     if (e == wantedEvent[2] and a == wantedArg) then
         result = runtime - prevRuntime
@@ -242,14 +272,15 @@ function OnSwappableEvent(wantedEvent, wantedArg, ...)
         if (result < pressLimit[2])then
             if(count < table.getn(arg)) then
                 count = count + 1
+                ls = count * 80; -- Light strength
+                DimBacklights(ls, 25)
                 OutputLogMessage("Count: %s\n\n", count)
             else
                 count = 1
                 OutputLogMessage("Count: %s\n\n", count)
             end
         end
-        ls = count * 80; -- Light strength
-        DimBacklights(ls, 25)
+
     end
 end
 
@@ -294,9 +325,7 @@ function TypeText(text)
 end
 
 function OnTimedEvent(wantedEvent, wantedArg, ...) -- Variable arguments requires at least one array of key strings (max 3 arrays)
-    if (e == wantedEvent[1] and a == wantedArg) then
-        prevRuntime = runtime
-    end
+    SetPrevRuntimeAtKeydownEvent(wantedEvent, wantedArg)
 
     if (e == wantedEvent[2] and a == wantedArg) then
         result = runtime - prevRuntime
@@ -328,9 +357,7 @@ function OnMacroEvent(wantedEvent, wantedArg, ...)
 end
 
 function OnTimedMacroEvent(wantedEvent, wantedArg, ...)
-    if (e == wantedEvent[1] and a == wantedArg) then
-        prevRuntime = runtime
-    end
+    SetPrevRuntimeAtKeydownEvent(wantedEvent, wantedArg)
 
     if (e == wantedEvent[2] and a == wantedArg) then
         result = runtime - prevRuntime
@@ -346,6 +373,12 @@ function OnTimedMacroEvent(wantedEvent, wantedArg, ...)
     end
 end
 
+function SetPrevRuntimeAtKeydownEvent(wantedEvent, wantedArg)
+    if (e == wantedEvent[1] and a == wantedArg) then
+        prevRuntime = runtime
+    end
+end
+
 -- Miscellaneous functions
 function PressAndReleaseAll(keys)
     PressAll(keys)
@@ -356,6 +389,7 @@ function PressAll(keys)
     for i = 1,table.getn(keys) do
         if keys[i] then
             PressKey(keys[i])
+            Sleep(2)
         end
     end
 end
@@ -364,6 +398,7 @@ function ReleaseAll(keys)
     for i = 1,table.getn(keys) do
         if keys[i] then
             ReleaseKey(keys[i])
+            Sleep(2)
         end
     end
 end
@@ -371,7 +406,7 @@ end
 function RunMacroLogic(keys)
     for i = 1,table.getn(keys) do
         PressAndReleaseAll(keys[i])
-        Sleep(500)
+        Sleep(100)
     end
 end
 
